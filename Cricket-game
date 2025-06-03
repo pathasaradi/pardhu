@@ -1,0 +1,148 @@
+python
+#!/usr/bin/env python3
+import random
+import time
+import os
+
+def clear_screen():
+    """Clear the terminal screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def display_header():
+    """Display the game header."""
+    print("\n" + "=" * 50)
+    print("🏏 CRICKET TOURNAMENT GAME 🏏".center(50))
+    print("=" * 50 + "\n")
+
+def display_rules():
+    """Display the game rules."""
+    print("\n📜 GAME RULES:")
+    print("1. You will bat first, then bowl.")
+    print("2. Choose a number between 1-6 for batting/bowling.")
+    print("3. If your batting number matches the computer's bowling number, you're OUT!")
+    print("4. Same applies when computer is batting.")
+    print("5. The team with the highest score wins!\n")
+    input("Press Enter to continue...")
+
+def player_batting():
+    """Phase 1: Player bats first."""
+    clear_screen()
+    display_header()
+
+    print("🎮 PHASE 1: YOU'RE BATTING 🏏\n")
+
+    player_score = 0
+    is_out = False
+    balls_faced = 0
+
+    while not is_out:
+        try:
+            player_shot = int(input("\nChoose your shot (1-6): "))
+            if player_shot < 1 or player_shot > 6:
+                print("Please enter a number between 1 and 6!")
+                continue
+
+            computer_bowl = random.randint(1, 6)
+            balls_faced += 1
+
+            print(f"\nYour Shot: {player_shot}")
+            print(f"Computer Bowl: {computer_bowl}")
+
+            if player_shot == computer_bowl:
+                print("\n🚨 OUT! 🚨")
+                print(f"You're out after facing {balls_faced} balls!")
+                is_out = True
+            else:
+                player_score += player_shot
+                print(f"Good Shot! +{player_shot} run(s)")
+
+            print(f"Total Score: {player_score}")
+
+        except ValueError:
+            print("Please enter a valid number!")
+
+    print("\nYour innings is over!")
+    print(f"Your Final Score: {player_score}")
+    input("\nPress Enter to continue to bowling phase...")
+
+    return player_score
+
+def computer_batting(target_score):
+    """Phase 2: Computer bats."""
+    clear_screen()
+    display_header()
+
+    print("🏏 PHASE 2: COMPUTER IS BATTING 🤖\n")
+    print(f"Target Score: {target_score + 1}\n")
+
+    computer_score = 0
+    is_out = False
+    balls_faced = 0
+
+    while not is_out and computer_score <= target_score:
+        input("\nPress Enter to bowl...")
+
+        computer_shot = random.randint(1, 6)
+        player_bowl = random.randint(1, 6)
+        balls_faced += 1
+
+        print(f"\nComputer Shot: {computer_shot}")
+        print(f"Your Bowl: {player_bowl}")
+
+        if computer_shot == player_bowl:
+            print("\n🚨 OUT! 🚨")
+            print(f"Computer is out after facing {balls_faced} balls!")
+            is_out = True
+        else:
+            computer_score += computer_shot
+            print(f"Computer scored +{computer_shot} run(s)")
+
+        print(f"Computer Total Score: {computer_score}")
+
+        # Check if computer has won
+        if computer_score > target_score:
+            print("\nComputer has beaten your score!")
+            break
+
+        # Add some delay for better experience
+        time.sleep(1)
+
+    print("\nComputer's innings is over!")
+    print(f"Computer's Final Score: {computer_score}")
+    input("\nPress Enter to see the final result...")
+
+    return computer_score
+
+def display_result(player_score, computer_score):
+    """Display the final match result."""
+    clear_screen()
+    display_header()
+
+    print("🏆 FINAL MATCH RESULT 🏆\n")
+    print(f"Your Score: {player_score}")
+    print(f"Computer's Score: {computer_score}\n")
+
+    if player_score > computer_score:
+        print("🎉 YOU WIN! 🎉")
+        print("Congratulations on your victory!")
+    elif computer_score > player_score:
+        print("😔 COMPUTER WINS! 🤖")
+        print("Better luck next time!")
+    else:
+        print("🤝 IT'S A TIE! 🤝")
+        print("What an exciting match!")
+
+def main():
+    """Main game function."""
+    clear_screen()
+    display_header()
+    display_rules()
+
+    player_score = player_batting()
+    computer_score = computer_batting(player_score)
+    display_result(player_score, computer_score)
+
+    print("\nThanks for playing the Cricket Tournament Game!")
+
+if __name__ == "__main__":
+    main()
