@@ -1,8 +1,23 @@
-about game 
+## About the Game
 
-The Cricket Tournament Game is a simple CLI-based simulation of a cricket match between a player and the computer. It captures the
-essence of cricket's batting and bowling mechanics through a number-matching system. The game is designed to be easy to understand
-while providing an engaging experience.
-The game uses random number generation to simulate the unpredictability of cricket matches. Each batting innings continues until a
-wicket falls (when the batting and bowling numbers match), creating tension as players try to maximize their score before getting
-out.
+Highway Dash - Village Racer is a fast-paced arcade-style driving game built with Python and Pygame. In this top-down racing
+experience, players navigate a blue car through increasingly challenging traffic on a scrolling highway.
+
+### Game Concept
+Take control of a village racer as you speed down a never-ending highway, dodging oncoming traffic and pushing your reflexes to the
+limit. The longer you survive, the faster you go and the higher your score climbs!
+
+### Key Features
+• Simple, intuitive controls using arrow keys
+• Procedurally generated obstacles that create unique challenges each playthrough
+• Progressive difficulty system that increases speed and obstacle frequency over time
+• Distance-based scoring system that rewards skillful play
+• Clean, minimalist visual design using basic geometric shapes
+• Fully implemented in Python with the Pygame library
+
+### Gameplay
+• Control your blue car using the left and right arrow keys
+• Avoid colliding with red obstacle cars coming down the highway
+• Watch your speed increase as you travel further
+• Try to achieve the highest distance score possible
+• After a crash, restart with a press of the R key
