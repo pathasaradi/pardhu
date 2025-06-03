@@ -1,0 +1,228 @@
++      1: import pygame
++      2: import random
++      3: import sys
++      4:
++      5: # Initialize pygame
++      6: pygame.init()
++      7:
++      8: # Screen dimensions
++      9: SCREEN_WIDTH = 800
++     10: SCREEN_HEIGHT = 600
++     11:
++     12: # Colors
++     13: WHITE = (255, 255, 255)
++     14: BLACK = (0, 0, 0)
++     15: GRAY = (100, 100, 100)
++     16: GREEN = (76, 153, 0)
++     17: BLUE = (0, 0, 255)
++     18: RED = (255, 0, 0)
++     19: YELLOW = (255, 255, 0)
++     20:
++     21: # Game variables
++     22: ROAD_WIDTH = 300
++     23: LANE_MARKER_WIDTH = 10
++     24: LANE_MARKER_HEIGHT = 50
++     25: LANE_MARKER_GAP = 40
++     26: CAR_WIDTH = 50
++     27: CAR_HEIGHT = 80
++     28: OBSTACLE_WIDTH = 50
++     29: OBSTACLE_HEIGHT = 80
++     30: OBSTACLE_SPEED_MIN = 5
++     31: OBSTACLE_SPEED_MAX = 10
++     32: OBSTACLE_FREQUENCY = 60  # frames between obstacle spawns
++     33: SPEED_INCREASE_RATE = 0.05
++     34:
++     35: # Create the screen
++     36: screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
++     37: pygame.display.set_caption("Highway Dash - Village Racer")
++     38:
++     39: # Clock for controlling game speed
++     40: clock = pygame.time.Clock()
++     41:
++     42: # Font for text
++     43: font = pygame.font.SysFont(None, 36)
++     44: large_font = pygame.font.SysFont(None, 72)
++     45:
++     46:
++     47: class Player:
++     48:     def __init__(self):
++     49:         self.width = CAR_WIDTH
++     50:         self.height = CAR_HEIGHT
++     51:         self.x = SCREEN_WIDTH // 2 - self.width // 2
++     52:         self.y = SCREEN_HEIGHT - self.height - 20
++     53:         self.speed = 8
++     54:         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
++     55:
++     56:     def move(self, direction):
++     57:         if direction == "left" and self.x > (SCREEN_WIDTH - ROAD_WIDTH) // 2:
++     58:             self.x -= self.speed
++     59:         if direction == "right" and self.x < (SCREEN_WIDTH + ROAD_WIDTH) // 2 - self.width:
++     60:             self.x += self.speed
++     61:         self.rect.x = self.x
++     62:
++     63:     def draw(self):
++     64:         pygame.draw.rect(screen, BLUE, (self.x, self.y, self.width, self.height))
++     65:         # Add simple car details
++     66:         pygame.draw.rect(screen, BLACK, (self.x + 5, self.y + 5, self.width - 10, self.height - 10), 2)
++     67:         pygame.draw.rect(screen, BLACK, (self.x + 10, self.y + 15, self.width - 20, 20))
++     68:
++     69:
++     70: class Obstacle:
++     71:     def __init__(self, game_speed):
++     72:         self.width = OBSTACLE_WIDTH
++     73:         self.height = OBSTACLE_HEIGHT
++     74:         # Position the obstacle randomly within the road
++     75:         road_left = (SCREEN_WIDTH - ROAD_WIDTH) // 2
++     76:         self.x = random.randint(road_left, road_left + ROAD_WIDTH - self.width)
++     77:         self.y = -self.height
++     78:         self.speed = random.randint(OBSTACLE_SPEED_MIN, OBSTACLE_SPEED_MAX) + game_speed // 5
++     79:         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
++     80:
++     81:     def update(self):
++     82:         self.y += self.speed
++     83:         self.rect.y = self.y
++     84:
++     85:     def draw(self):
++     86:         pygame.draw.rect(screen, RED, (self.x, self.y, self.width, self.height))
++     87:         # Add simple car details
++     88:         pygame.draw.rect(screen, BLACK, (self.x + 5, self.y + 5, self.width - 10, self.height - 10), 2)
++     89:         pygame.draw.rect(screen, BLACK, (self.x + 10, self.y + 15, self.width - 20, 20))
++     90:
++     91:
++     92: class Road:
++     93:     def __init__(self):
++     94:         self.width = ROAD_WIDTH
++     95:         self.x = (SCREEN_WIDTH - self.width) // 2
++     96:         self.lane_markers = []
++     97:         self.marker_speed = 5
++     98:
++     99:         # Initialize lane markers
++    100:         marker_y = -LANE_MARKER_HEIGHT
++    101:         while marker_y < SCREEN_HEIGHT:
++    102:             self.lane_markers.append(marker_y)
++    103:             marker_y += LANE_MARKER_HEIGHT + LANE_MARKER_GAP
++    104:
++    105:     def update(self, game_speed):
++    106:         # Update lane marker positions
++    107:         for i in range(len(self.lane_markers)):
++    108:             self.lane_markers[i] += self.marker_speed + game_speed // 10
++    109:
++    110:             # If a marker goes off screen, reset it to the top
++    111:             if self.lane_markers[i] > SCREEN_HEIGHT:
++    112:                 self.lane_markers[i] = -LANE_MARKER_HEIGHT
++    113:
++    114:     def draw(self):
++    115:         # Draw road
++    116:         pygame.draw.rect(screen, GRAY, (self.x, 0, self.width, SCREEN_HEIGHT))
++    117:
++    118:         # Draw lane markers
++    119:         for y in self.lane_markers:
++    120:             marker_x = SCREEN_WIDTH // 2 - LANE_MARKER_WIDTH // 2
++    121:             pygame.draw.rect(screen, WHITE, (marker_x, y, LANE_MARKER_WIDTH, LANE_MARKER_HEIGHT))
++    122:
++    123:
++    124: def game_loop():
++    125:     # Game objects
++    126:     player = Player()
++    127:     road = Road()
++    128:     obstacles = []
++    129:
++    130:     # Game state
++    131:     game_over = False
++    132:     game_speed = 1
++    133:     distance = 0
++    134:     obstacle_timer = 0
++    135:
++    136:     while True:
++    137:         # Event handling
++    138:         for event in pygame.event.get():
++    139:             if event.type == pygame.QUIT:
++    140:                 pygame.quit()
++    141:                 sys.exit()
++    142:
++    143:             if game_over:
++    144:                 if event.type == pygame.KEYDOWN:
++    145:                     if event.key == pygame.K_r:
++    146:                         return  # Restart the game
++    147:                     elif event.key == pygame.K_q:
++    148:                         pygame.quit()
++    149:                         sys.exit()
++    150:
++    151:         if not game_over:
++    152:             # Handle continuous key presses
++    153:             keys = pygame.key.get_pressed()
++    154:             if keys[pygame.K_LEFT]:
++    155:                 player.move("left")
++    156:             if keys[pygame.K_RIGHT]:
++    157:                 player.move("right")
++    158:
++    159:             # Update game state
++    160:             game_speed += SPEED_INCREASE_RATE
++    161:             distance += game_speed / 10
++    162:
++    163:             # Update road
++    164:             road.update(game_speed)
++    165:
++    166:             # Spawn obstacles
++    167:             obstacle_timer += 1
++    168:             if obstacle_timer >= max(OBSTACLE_FREQUENCY - game_speed // 2, 20):  # Increase spawn rate with speed
++    169:                 obstacles.append(Obstacle(game_speed))
++    170:                 obstacle_timer = 0
++    171:
++    172:             # Update obstacles
++    173:             for obstacle in obstacles[:]:
++    174:                 obstacle.update()
++    175:
++    176:                 # Check for collision
++    177:                 if player.rect.colliderect(obstacle.rect):
++    178:                     game_over = True
++    179:
++    180:                 # Remove obstacles that have gone off screen
++    181:                 if obstacle.y > SCREEN_HEIGHT:
++    182:                     obstacles.remove(obstacle)
++    183:
++    184:         # Draw everything
++    185:         # Background (grass)
++    186:         screen.fill(GREEN)
++    187:
++    188:         # Road and lane markers
++    189:         road.draw()
++    190:
++    191:         # Obstacles
++    192:         for obstacle in obstacles:
++    193:             obstacle.draw()
++    194:
++    195:         # Player car
++    196:         player.draw()
++    197:
++    198:         # HUD - Speed and Distance
++    199:         speed_text = font.render(f"Speed: {int(game_speed * 10)} km/h", True, WHITE)
++    200:         distance_text = font.render(f"Distance: {int(distance)} m", True, WHITE)
++    201:         screen.blit(speed_text, (20, 20))
++    202:         screen.blit(distance_text, (20, 60))
++    203:
++    204:         # Game over screen
++    205:         if game_over:
++    206:             overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
++    207:             overlay.fill((0, 0, 0, 128))
++    208:             screen.blit(overlay, (0, 0))
++    209:
++    210:             game_over_text = large_font.render("GAME OVER", True, RED)
++    211:             score_text = font.render(f"Distance: {int(distance)} m", True, WHITE)
++    212:             restart_text = font.render("Press R to Restart or Q to Quit", True, YELLOW)
++    213:
++    214:             screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, SCREEN_HEIGHT // 2 - 80))
++    215:             screen.blit(score_text, (SCREEN_WIDTH // 2 - score_text.get_width() // 2, SCREEN_HEIGHT // 2))
++    216:             screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, SCREEN_HEIGHT // 2 + 60))
++    217:
++    218:         # Update display
++    219:         pygame.display.flip()
++    220:
++    221:         # Control game speed
++    222:         clock.tick(60)
++    223:
++    224:
++    225: # Main game loop
++    226: if __name__ == "__main__":
++    227:     while True:
++    228:         game_loop()
