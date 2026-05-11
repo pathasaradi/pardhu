@@ -1,7 +1,0 @@
-To create 4 branches in your Git repository, use these commands (run them one by one in your terminal). I'll assume example names; replace with your preferred names.
-
-git branch branch1 (creates "branch1")
-git branch branch2 (creates "branch2")
-git branch branch3 (creates "branch3")
-git branch branch4 (creates "branch4")
-After creating, switch to one with git checkout branch1, or create and switch with git checkout -b newbranch.
